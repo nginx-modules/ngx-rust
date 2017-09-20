@@ -3,8 +3,12 @@ use std::str;
 use std::slice;
 
 use bindings::ngx_http_request_s;
+
+use bindings::ngx_http_upstream_state_t;
+
 use bindings::ngx_http_headers_in_t;
 use bindings::ngx_http_headers_out_t;
+use bindings::ngx_array_t;
 use bindings::ngx_list_part_t;
 use bindings::ngx_table_elt_t;
 use bindings::ngx_list_t;
@@ -23,11 +27,11 @@ impl ngx_str_t  {
         unsafe {
             let slice = slice::from_raw_parts(self.data,self.len) ;
             return str::from_utf8(slice).unwrap();
-        }            
-   
+        }
+
     }
 
-    // get string 
+    // get string
     pub fn to_string(&self) -> String  {
         return String::from(self.to_str());
     }
@@ -40,6 +44,11 @@ impl ngx_http_request_s {
         unsafe {  (*self.schema_start)};
     }
     */
+
+}
+
+impl ngx_http_upstream_state_t {
+
 
 }
 
@@ -89,6 +98,8 @@ impl ngx_http_headers_out_t {
 }
 
 
+
+
 pub struct NgxListIterator {
 
     done: bool ,
@@ -98,7 +109,7 @@ pub struct NgxListIterator {
 }
 
 
-// create new http request iterator 
+// create new http request iterator
 pub fn list_iterator(list: *const ngx_list_t) -> NgxListIterator  {
 
     unsafe {
@@ -111,7 +122,7 @@ pub fn list_iterator(list: *const ngx_list_t) -> NgxListIterator  {
             i: 0
         }
     }
-    
+
 }
 
 // iterator for ngx_list_t
@@ -122,7 +133,7 @@ impl Iterator for NgxListIterator  {
     // TODO: try to use str instead of string
 
     type Item = (String,String);
-    
+
     fn next(&mut self) -> Option<Self::Item> {
 
         unsafe {
@@ -143,17 +154,17 @@ impl Iterator for NgxListIterator  {
 
                 let header: *const ngx_table_elt_t = self.h.offset(self.i as isize);
 
-                let header_name: ngx_str_t = (*header).key;   
-                    
+                let header_name: ngx_str_t = (*header).key;
+
                 let header_value: ngx_str_t = (*header).value;
-               
+
                 self.i = self.i + 1;
 
                 return Some( (header_name.to_string(),header_value.to_string()) ) ;
 
             }
         }
-    
+
     }
 
 }
@@ -187,4 +198,3 @@ void ngx_log_error_core(ngx_uint_t level, ngx_log_t *log, ngx_err_t err,
     /*
      log(&format!("target uid founded!"));
      */
-
